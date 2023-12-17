@@ -85,10 +85,10 @@ def plot_hist(y, y_pred, n) -> None:
     num_cols: int = int(3.322 * np.log10(n)) + 1
     _, bins = np.histogram(y - y_pred, bins=num_cols, density=True)
     values: np.array = np.linspace(bins[0], bins[-1], 100)
-    distribution = norm.pdf(values, np.mean(diff), np.std(diff))
+    distribution = norm.pdf(values, 0, np.std(diff))
     plt.figure()
     plt.title('Гистограма плотности распределения случайной ошибки')
-    plt.hist(y - y_pred, bins=num_cols, density=True, color='#7d7878', edgecolor='black')
+    plt.hist(diff, bins=num_cols, density=True, color='#7d7878', edgecolor='black')
     plt.plot(values, distribution, color='green', label='Распределение')
     plt.legend(loc="upper left", fontsize=10)
     plt.xlabel('Values')

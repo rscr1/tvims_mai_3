@@ -20,9 +20,9 @@ def t_test(x:np.array, y: np.array, n: int, alpha: float) -> bool:
     w: np.array = np.dot(np.dot(np.linalg.inv(np.dot(X.T, X)), X.T), y)
     mse: float = ((y - np.dot(X, w))**2 / (num_samples - num_features)).sum()
     se: np.array = np.sqrt(np.diag(mse * np.linalg.inv(np.dot(X.T, X))))
-    t_: np.array = np.abs(w / se)
+    T: np.array = np.abs(w / se)
     df: int = num_samples - num_features
-    p_value = 2 * (1 - t.cdf(t_, df=df))
+    p_value = 2 * (1 - t.cdf(T, df=df))
     if p_value[n] < alpha:
         print(f'Степень многочлена = {n} является статистически значимым.')
         return True
@@ -62,13 +62,13 @@ def calculate_confidence_interval_phi(mse: float, X: np.array, w: np.array, n: i
     f_pred = x * sp.Matrix(w)
     return (f_pred + i *  root * t_ for i in [-1, 1])
 
-def calculate_chi2(x, y, y_pred, n) -> tuple:
+def chi2_test(x, y, y_pred, n) -> tuple:
     diff = y - y_pred
     num_bins = int(3.32 * np.log10(n)) + 1
     hist, bin_edges = np.histogram(diff, bins=num_bins, density=True)
     bin_width = bin_edges[1] - bin_edges[0]
-    expected_freq = np.diff([0] + list(norm.cdf(bin_edges, loc=np.mean(diff), scale=np.std(diff))) + [1])
+    expected_freq = np.diff([0]+ list(norm.cdf(bin_edges, loc=0, scale=(np.sum(diff**2) / n)))+[1])
     estimated_freq = [0] + list(hist * bin_width) + [0]
-    chi2_ = len(x)*np.sum((estimated_freq - expected_freq)**2 / expected_freq)
-    p_value = 1 - np.sum(chi2.cdf(chi2_, df=len(hist) - 3))
+    chi2_ = len(x) * np.sum((estimated_freq - expected_freq)**2 / expected_freq)
+    p_value = 1 - np.sum(chi2.cdf(chi2_, df=num_bins - 1))
     return p_value, chi2_

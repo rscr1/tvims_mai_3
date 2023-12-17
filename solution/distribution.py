@@ -9,13 +9,16 @@ class Distribution:
         - n: int- Размер выборки (количество объектов)
         - m: int- Сложность модели (степень многочлена)
         - normal_distribution: bool- Вид распределения (True - Normal, False - Uniform)
+        - seed: int- Воспроизводимость случайных результатов
     '''
-    def __init__(self, theta: np.array, var: float, n: int, m: int, normal_distribution: bool) -> None:
+    def __init__(self, theta: np.array, var: float, n: int, m: int, normal_distribution: bool, seed: int) -> None:
         self.theta = theta[:m+1]
         self.var = var
         self.n = n
         self.m = m
         self.normal_distribution = normal_distribution
+        self.seed = seed
+        
         self.eps = self.gen_distribution()
         self.x_k = self.calculate_x_k()
         self.X = self.calculate_X()
@@ -33,6 +36,7 @@ class Distribution:
         Функция для генерации распределения шума
         returns: np.array[float] массив с размерностью (n)- неустранимый шум
         '''
+        np.random.seed(seed=self.seed)
         if self.normal_distribution:
             eps: np.array = np.random.normal(0, self.var, self.n)
         else:
@@ -65,15 +69,14 @@ class Distribution:
         Функция для рассчета зависимой переменной y
         returns: np.array[float] массив с размерностью (n)- зависимая переменная
         '''
-        return self.x_k + self.phi
+        return self.phi + self.eps
 
     def fit(self) -> np.array:
         '''
-        Функция тренировки модели
+        Функция поиска параметров модели
         returns: np.array[float] массив с размерностью (n)- веса модели
         '''
-        y = self.phi + self.eps
-        self.w = np.dot(np.dot(np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), y)
+        self.w = np.dot(np.dot(np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), self.y)
         return self.w
 
     def predict(self) -> np.array:
