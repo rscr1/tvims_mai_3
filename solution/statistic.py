@@ -62,13 +62,18 @@ def calculate_confidence_interval_phi(mse: float, X: np.array, w: np.array, n: i
     f_pred = x * sp.Matrix(w)
     return (f_pred + i *  root * t_ for i in [-1, 1])
 
-def chi2_test(x, y, y_pred, n) -> tuple:
+def chi2_test(x, y, y_pred, n, alpha) -> tuple:
     diff = y - y_pred
     num_bins = int(3.32 * np.log10(n)) + 1
     hist, bin_edges = np.histogram(diff, bins=num_bins, density=True)
     bin_width = bin_edges[1] - bin_edges[0]
-    expected_freq = np.diff([0]+ list(norm.cdf(bin_edges, loc=0, scale=(np.sum(diff**2) / n)))+[1])
+    expected_freq = np.diff([0] + list(norm.cdf(bin_edges, loc=0, scale=(np.sum(diff**2) / n))) + [1])
     estimated_freq = [0] + list(hist * bin_width) + [0]
     chi2_ = len(x) * np.sum((estimated_freq - expected_freq)**2 / expected_freq)
     p_value = 1 - np.sum(chi2.cdf(chi2_, df=num_bins - 1))
-    return p_value, chi2_
+
+    critical_value_left = chi2.ppf(alpha / 2, df=num_bins - 1)
+    critical_value_right = chi2.ppf(1 - alpha / 2, df=num_bins - 1)
+    confidence_interval = (critical_value_left, critical_value_right)
+    critical_interval = ((-float('inf'), critical_value_left), (critical_value_right, float('inf')))
+    return p_value, chi2_, confidence_interval, critical_interval
