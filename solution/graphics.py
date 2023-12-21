@@ -5,7 +5,7 @@ import sympy as sp
 from scipy.stats import norm, uniform
 
 
-def plot_phi(x_k, theta, eps, m) -> None:
+def plot_phi(x_k, theta, y_k, m) -> None:
     '''
     inputs:
         - x_k: np.array[flota] массив размерностью (n)- признаки модели
@@ -15,11 +15,10 @@ def plot_phi(x_k, theta, eps, m) -> None:
     '''
     x = np.linspace(-4, 4, 100)
     X = np.vander(x, m + 1, increasing=True)
-    X_k = np.vander(x_k, m + 1, increasing=True)
     plt.figure()
     plt.title('Истинный полезный сигнал и набор наблюдений')
     plt.plot(x, np.dot(X, theta), color='green', label='Истинный полезный сигнал')
-    plt.scatter(x_k, np.dot(X_k, theta) + eps, color='black', label='Набор наблюдений')
+    plt.scatter(x_k, y_k, color='black', label='Набор наблюдений')
     plt.legend(loc="upper left", fontsize=10)
     plt.xlabel('X')
     plt.ylabel('Values')
